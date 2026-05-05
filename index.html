@@ -3,104 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UV Valparaíso | Monitor Oficial</title>
+    <title>Monitor UV - Duoc UC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .uv-card { transition: all 0.5s ease; }
+    </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col items-center p-6">
 
-    <div class="bg-white shadow-2xl rounded-[2.5rem] p-8 max-w-sm w-full border border-gray-100 text-center">
-        <header class="mb-6">
-            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                En Vivo • Región de Valparaíso
-            </span>
-        </header>
+    <!-- Header -->
+    <header class="w-full max-w-md mb-8 text-center">
+        <h1 class="text-2xl font-semibold tracking-tight">Índice UV Solar</h1>
+        <p class="text-gray-500 text-sm">Escuela de Turismo | Duoc UC</p>
+    </header>
 
-        <section id="loader" class="py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        </section>
+    <!-- Main Card -->
+    <main id="main-card" class="uv-card w-full max-w-md bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center">
+        <div id="loader" class="animate-pulse">
+            <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
+            <div class="h-20 bg-gray-200 rounded-full w-20 mx-auto mb-4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
 
-        <section id="content" class="hidden">
-            <h1 class="text-gray-400 text-sm font-medium">Índice UV Máximo Hoy</h1>
-            <div id="uv-number" class="text-9xl font-black my-4 tracking-tighter transition-all duration-700">
-                0
-            </div>
+        <div id="content" class="hidden">
+            <p id="location-name" class="text-lg font-medium text-gray-700 mb-1">Cargando ubicación...</p>
+            <p id="coords" class="text-xs text-gray-400 mb-6 uppercase tracking-widest"></p>
             
-            <div id="uv-badge" class="inline-block px-4 py-2 rounded-2xl font-bold text-white mb-6">
-                Cargando...
+            <div id="uv-circle" class="w-32 h-32 rounded-full mx-auto flex flex-col items-center justify-center mb-6 border-8">
+                <span id="uv-value" class="text-4xl font-bold">0</span>
+                <span class="text-xs font-semibold uppercase">Índice</span>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-left border-t border-gray-100 pt-6">
-                <div>
-                    <p class="text-gray-400 text-xs uppercase">Latitud</p>
-                    <p class="font-bold text-gray-700">-33.04</p>
-                </div>
-                <div>
-                    <p class="text-gray-400 text-xs uppercase">Longitud</p>
-                    <p class="font-bold text-gray-700">-71.61</p>
-                </div>
-            </div>
-        </section>
+            <h2 id="uv-level" class="text-xl font-semibold mb-2">--</h2>
+            <p id="uv-advice" class="text-sm text-gray-500 leading-relaxed"></p>
+        </div>
+    </main>
 
-        <footer class="mt-8">
-            <p class="text-gray-300 text-[10px] leading-tight">
-                Datos provistos por Open-Meteo OMS.<br>Actualizado automáticamente cada 24h.
-            </p>
-        </footer>
-    </div>
+    <!-- Footer / Info -->
+    <footer class="w-full max-w-md mt-auto pt-10 text-center text-xs text-gray-400">
+        <p>Datos provistos por Open-Meteo • Basado en el estándar de la OMS</p>
+    </footer>
 
     <script>
-        const UI = {
-            number: document.getElementById('uv-number'),
-            badge: document.getElementById('uv-badge'),
-            content: document.getElementById('content'),
-            loader: document.getElementById('loader')
+        const uvConfig = {
+            1: { label: 'Bajo', color: '#3EA72D', text: 'white', advice: 'Puedes permanecer en el exterior sin riesgo.' },
+            3: { label: 'Moderado', color: '#FFF300', text: 'black', advice: 'Usa protector solar y busca sombra en las horas centrales.' },
+            6: { label: 'Alto', color: '#F18B00', text: 'white', advice: 'Usa sombrero, gafas de sol y protector solar FPS 30+.' },
+            8: { label: 'Muy Alto', color: '#E53210', text: 'white', advice: 'Reduce la exposición entre las 11:00 y las 16:00 horas.' },
+            11: { label: 'Extremo', color: '#B567A4', text: 'white', advice: 'Riesgo extremo. Evita salir. La piel puede quemarse en minutos.' }
         };
 
-        async function fetchUVData() {
-            // Coordenadas exactas de Valparaíso
-            const lat = -33.0472;
-            const lon = -71.6127;
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=uv_index_max&timezone=auto`;
+        function getUvDetails(value) {
+            if (value < 3) return uvConfig[1];
+            if (value < 6) return uvConfig[3];
+            if (value < 8) return uvConfig[6];
+            if (value < 11) return uvConfig[8];
+            return uvConfig[11];
+        }
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const uvIndex = data.daily.uv_index_max[0];
-                
-                updateDisplay(uvIndex);
-            } catch (error) {
-                console.error("Error obteniendo datos:", error);
-                UI.badge.innerText = "Error de conexión";
-                UI.badge.classList.add('bg-red-500');
+        async function init() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    try {
+                        // 1. Obtener datos de Open-Meteo
+                        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=uv_index_max&timezone=auto&current_weather=true`);
+                        const data = await response.json();
+                        
+                        // 2. Obtener nombre de ciudad (Reverse Geocoding básico)
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const geoData = await geoRes.json();
+                        const city = geoData.address.city || geoData.address.town || geoData.address.village || 'Ubicación Detectada';
+
+                        // Actualizar UI
+                        updateUI(data.daily.uv_index_max[0], city, latitude, longitude);
+                    } catch (error) {
+                        console.error("Error al obtener datos:", error);
+                    }
+                }, () => {
+                    alert("Por favor, permite el acceso a la ubicación para ver el índice local.");
+                });
             }
         }
 
-        function updateDisplay(val) {
-            UI.number.innerText = val.toFixed(1);
-            UI.loader.classList.add('hidden');
-            UI.content.classList.remove('hidden');
+        function updateUI(uvIndex, city, lat, lon) {
+            const details = getUvDetails(uvIndex);
+            
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+            
+            document.getElementById('location-name').innerText = city;
+            document.getElementById('coords').innerText = `${lat.toFixed(4)}° / ${lon.toFixed(4)}°`;
+            
+            const uvCircle = document.getElementById('uv-circle');
+            const uvValue = document.getElementById('uv-value');
+            const uvLevel = document.getElementById('uv-level');
+            const uvAdvice = document.getElementById('uv-advice');
 
-            // Escala de Riesgo OMS
-            let config = { label: 'Extremo', color: 'text-purple-600', bg: 'bg-purple-600' };
-
-            if (val <= 2) {
-                config = { label: 'Bajo', color: 'text-green-500', bg: 'bg-green-500' };
-            } else if (val <= 5) {
-                config = { label: 'Moderado', color: 'text-yellow-500', bg: 'bg-yellow-500' };
-            } else if (val <= 7) {
-                config = { label: 'Alto', color: 'text-orange-500', bg: 'bg-orange-500' };
-            } else if (val <= 10) {
-                config = { label: 'Muy Alto', color: 'text-red-600', bg: 'bg-red-600' };
-            }
-
-            UI.number.className = `text-9xl font-black my-4 tracking-tighter transition-all duration-700 ${config.color}`;
-            UI.badge.className = `inline-block px-4 py-2 rounded-2xl font-bold text-white mb-6 ${config.bg}`;
-            UI.badge.innerText = config.label;
+            uvCircle.style.borderColor = details.color;
+            uvValue.innerText = uvIndex.toFixed(1);
+            uvLevel.innerText = details.label;
+            uvLevel.style.color = details.color === '#FFF300' ? '#D1A100' : details.color;
+            uvAdvice.innerText = details.advice;
         }
 
-        fetchUVData();
+        init();
     </script>
 </body>
 </html>
