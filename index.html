@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor UV - DuocUC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monitor UV - Turismo DuocUC</title>
     <style>
         :root {
             --color-bajo: #4caf50;
@@ -12,89 +12,221 @@
             --color-muy-alto: #d32f2f;
             --color-extremo: #7b1fa2;
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-secondary: rgba(255, 255, 255, 0.85);
             --bg-default: #444;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
+            padding: 0;
             background-color: #e0e0e0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden; /* Previene scroll en el body */
         }
 
         .phone-container {
-            width: 360px;
-            height: 760px;
+            width: 100%;
+            max-width: 380px; /* Ancho máximo para simular teléfono en desktop */
+            height: 100vh; /* Ocupa todo el alto de la pantalla móvil */
             background: #000;
-            border-radius: 40px;
-            padding: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Simulación de marco de teléfono en pantallas grandes */
+        @media (min-width: 450px) {
+            .phone-container {
+                height: 780px;
+                border-radius: 45px;
+                padding: 15px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            }
         }
 
         .screen {
             width: 100%;
             height: 100%;
-            border-radius: 30px;
             background-color: var(--bg-default);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 50px 25px 30px;
-            box-sizing: border-box;
+            padding: 40px 25px 25px; /* Padding superior ajustado */
             transition: background-color 0.8s ease;
             overflow: hidden;
         }
 
-        .header { font-size: 11px; font-weight: bold; letter-spacing: 1px; color: var(--text-secondary); }
-        .uv-value { font-size: 110px; font-weight: 800; margin: 10px 0; }
-        .uv-label { font-size: 38px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; }
+        /* Redondear esquinas solo en simulación desktop */
+        @media (min-width: 450px) {
+            .screen {
+                border-radius: 35px;
+            }
+        }
 
-        .uv-scale { text-align: left; font-size: 11px; font-weight: bold; }
-        .scale-item { display: flex; align-items: center; margin-bottom: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+        /* --- Secciones --- */
 
-        .recommendation { font-size: 12px; text-align: left; line-height: 1.5; min-height: 80px; }
-        .location-box { font-size: 11px; text-align: left; border-top: 1px solid rgba(255,255,255,0.2); pt: 15px; padding-top: 15px; }
-        .footer { font-size: 9px; opacity: 0.7; font-weight: bold; }
+        .header-section {
+            text-align: center;
+            margin-bottom: 15px;
+        }
 
-        /* Animación de carga */
-        .loading { opacity: 0.5; font-style: italic; }
+        .header {
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* NUEVO: Datos de georreferencia sobre el índice, centrados */
+        .location-section-top {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .main-uv-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centrado vertical del círculo */
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        /* NUEVO: Contenedor del círculo del índice */
+        .uv-circle {
+            width: 200px;
+            height: 200px;
+            border: 8px solid var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .uv-value {
+            font-size: 80px; /* Ajustado para caber en el círculo */
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .uv-label {
+            font-size: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .uv-scale {
+            text-align: left;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .scale-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .recommendation {
+            font-size: 12px;
+            text-align: left;
+            line-height: 1.6;
+            color: var(--text-primary);
+            min-height: 70px;
+            border-left: 3px solid rgba(255,255,255,0.3);
+            padding-left: 15px;
+        }
+
+        .footer-section {
+            text-align: center;
+            margin-top: auto; /* Empuja al fondo */
+            padding-top: 15px;
+        }
+
+        .footer {
+            font-size: 9px;
+            opacity: 0.7;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="phone-container">
         <div class="screen" id="screen">
-            <div class="header">MONITOR DE RADIACIÓN UV - ESCUELA DE TURISMO DUOCUC</div>
             
-            <div id="content">
-                <div class="uv-value" id="uv-num">--</div>
-                <div class="uv-label" id="uv-text">Cargando...</div>
+            <div class="header-section">
+                <div class="header">MONITOR DE RADIACIÓN UV</div>
+                <div class="header">ESCUELA DE TURISMO DUOCUC</div>
             </div>
 
-            <div class="uv-scale">
-                <div class="scale-item"><div class="dot" style="background: var(--color-bajo)"></div> BAJO</div>
-                <div class="scale-item"><div class="dot" style="background: var(--color-moderado)"></div> MODERADO</div>
-                <div class="scale-item"><div class="dot" style="background: var(--color-alto)"></div> ALTO</div>
-                <div class="scale-item"><div class="dot" style="background: var(--color-muy-alto)"></div> MUY ALTO</div>
-                <div class="scale-item"><div class="dot" style="background: var(--color-extremo)"></div> EXTREMO</div>
+            <!-- MODIFICADO: Georreferencia arriba y centrada -->
+            <div class="location-section-top">
+                CIUDAD: <span id="city-top">DETECTANDO...</span><br>
+                COORDENADAS: <span id="coords-top">--.--, --.--</span>
             </div>
 
-            <div class="recommendation" id="rec-text">
-                Por favor, permite el acceso a tu ubicación para obtener los datos en tiempo real.
+            <div class="main-uv-section">
+                <!-- MODIFICADO: Valor del índice en un círculo -->
+                <div class="uv-circle">
+                    <div class="uv-value" id="uv-num">--</div>
+                </div>
+                <div class="uv-label" id="uv-text">CARGANDO...</div>
             </div>
 
-            <div class="location-box">
-                UBICACIÓN: <span id="coords">Detectando...</span><br>
-                CIUDAD: <span id="city">---</span>
+            <div class="info-section">
+                <div class="uv-scale">
+                    <div class="scale-item"><div class="dot" style="background: var(--color-bajo)"></div> BAJO (0-2)</div>
+                    <div class="scale-item"><div class="dot" style="background: var(--color-moderado)"></div> MODERADO (3-5)</div>
+                    <div class="scale-item"><div class="dot" style="background: var(--color-alto)"></div> ALTO (6-7)</div>
+                    <div class="scale-item"><div class="dot" style="background: var(--color-muy-alto)"></div> MUY ALTO (8-10)</div>
+                    <div class="scale-item"><div class="dot" style="background: var(--color-extremo)"></div> EXTREMO (11+)</div>
+                </div>
+
+                <div class="recommendation" id="rec-text">
+                    Por favor, permite el acceso a tu ubicación para obtener los datos UV en tiempo real.
+                </div>
             </div>
 
-            <div class="footer">DATOS: API OPEN-METEO & NOMINATIM</div>
+            <div class="footer-section">
+                <div class="footer">DATOS: API OPEN-METEO & NOMINATIM</div>
+            </div>
         </div>
     </div>
 
@@ -109,52 +241,70 @@
 
         async function updateUI(lat, lon) {
             try {
-                // 1. Obtener Índice UV de Open-Meteo
+                // 1. Actualizar Coordenadas inmediatamente
+                document.getElementById('coords-top').innerText = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+
+                // 2. Obtener Índice UV de Open-Meteo
                 const uvRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=uv_index&timezone=auto`);
                 const uvData = await uvRes.json();
                 const uv = uvData.current.uv_index;
 
-                // 2. Obtener Ciudad (Reverse Geocoding)
-                const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+                // 3. Obtener Ciudad (Reverse Geocoding)
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`);
                 const geoData = await geoRes.json();
-                const city = geoData.address.city || geoData.address.town || geoData.address.village || "Desconocida";
+                
+                // Priorizar ciudad, luego pueblo, luego villa
+                const city = geoData.address.city || geoData.address.town || geoData.address.village || "Ubicación Desconocida";
 
-                // 3. Determinar nivel
+                // 4. Determinar nivel UV
                 let level = config.low;
                 if (uv >= 3) level = config.mod;
                 if (uv >= 6) level = config.high;
                 if (uv >= 8) level = config.vhigh;
                 if (uv >= 11) level = config.ext;
 
-                // 4. Aplicar a la interfaz
+                // 5. Aplicar cambios a la interfaz
                 document.getElementById('screen').style.backgroundColor = level.color;
                 document.getElementById('uv-num').innerText = uv.toFixed(1);
                 document.getElementById('uv-text').innerText = level.text;
                 document.getElementById('rec-text').innerText = level.rec;
-                document.getElementById('coords').innerText = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
-                document.getElementById('city').innerText = city.toUpperCase();
+                document.getElementById('city-top').innerText = city.toUpperCase();
 
             } catch (err) {
+                console.error("Error actualizando la interfaz:", err);
                 document.getElementById('uv-text').innerText = "Error";
-                document.getElementById('rec-text').innerText = "Hubo un problema al conectar con los servicios meteorológicos.";
+                document.getElementById('rec-text').innerText = "Hubo un problema al conectar con los servicios meteorológicos o de ubicación.";
             }
         }
 
         function init() {
             if ("geolocation" in navigator) {
+                // Opción de alta precisión para móviles
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+
                 navigator.geolocation.getCurrentPosition(
                     pos => updateUI(pos.coords.latitude, pos.coords.longitude),
                     err => {
+                        console.error("Error de geolocalización:", err);
                         document.getElementById('uv-text').innerText = "Bloqueado";
-                        document.getElementById('rec-text').innerText = "Activa la ubicación en tu navegador para usar esta herramienta.";
-                    }
+                        document.getElementById('city-top').innerText = "ACCESO DENEGADO";
+                        document.getElementById('rec-text').innerText = "Activa los permisos de ubicación en tu navegador y recarga la página para usar esta herramienta.";
+                    },
+                    geoOptions
                 );
             } else {
                 document.getElementById('uv-text').innerText = "No Soportado";
+                document.getElementById('city-top').innerText = "NAVEGADOR ANTIGUO";
+                document.getElementById('rec-text').innerText = "Tu navegador no soporta la detección de ubicación.";
             }
         }
 
-        init();
+        // Iniciar al cargar
+        window.onload = init;
     </script>
 </body>
 </html>
