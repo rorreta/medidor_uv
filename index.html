@@ -3,114 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor UV - Duoc UC</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Monitor de Radiación UV - Escuela de Turismo DuocUC</title>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .uv-card { transition: all 0.5s ease; }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col items-center p-6">
-
-    <!-- Header -->
-    <header class="w-full max-w-md mb-8 text-center">
-        <h1 class="text-2xl font-semibold tracking-tight">Índice UV Solar</h1>
-        <p class="text-gray-500 text-sm">Escuela de Turismo | Duoc UC</p>
-    </header>
-
-    <!-- Main Card -->
-    <main id="main-card" class="uv-card w-full max-w-md bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center">
-        <div id="loader" class="animate-pulse">
-            <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
-            <div class="h-20 bg-gray-200 rounded-full w-20 mx-auto mb-4"></div>
-            <div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-        </div>
-
-        <div id="content" class="hidden">
-            <p id="location-name" class="text-lg font-medium text-gray-700 mb-1">Cargando ubicación...</p>
-            <p id="coords" class="text-xs text-gray-400 mb-6 uppercase tracking-widest"></p>
-            
-            <div id="uv-circle" class="w-32 h-32 rounded-full mx-auto flex flex-col items-center justify-center mb-6 border-8">
-                <span id="uv-value" class="text-4xl font-bold">0</span>
-                <span class="text-xs font-semibold uppercase">Índice</span>
-            </div>
-
-            <h2 id="uv-level" class="text-xl font-semibold mb-2">--</h2>
-            <p id="uv-advice" class="text-sm text-gray-500 leading-relaxed"></p>
-        </div>
-    </main>
-
-    <!-- Footer / Info -->
-    <footer class="w-full max-w-md mt-auto pt-10 text-center text-xs text-gray-400">
-        <p>Datos provistos por Open-Meteo • Basado en el estándar de la OMS</p>
-    </footer>
-
-    <script>
-        const uvConfig = {
-            1: { label: 'Bajo', color: '#3EA72D', text: 'white', advice: 'Puedes permanecer en el exterior sin riesgo.' },
-            3: { label: 'Moderado', color: '#FFF300', text: 'black', advice: 'Usa protector solar y busca sombra en las horas centrales.' },
-            6: { label: 'Alto', color: '#F18B00', text: 'white', advice: 'Usa sombrero, gafas de sol y protector solar FPS 30+.' },
-            8: { label: 'Muy Alto', color: '#E53210', text: 'white', advice: 'Reduce la exposición entre las 11:00 y las 16:00 horas.' },
-            11: { label: 'Extremo', color: '#B567A4', text: 'white', advice: 'Riesgo extremo. Evita salir. La piel puede quemarse en minutos.' }
-        };
-
-        function getUvDetails(value) {
-            if (value < 3) return uvConfig[1];
-            if (value < 6) return uvConfig[3];
-            if (value < 8) return uvConfig[6];
-            if (value < 11) return uvConfig[8];
-            return uvConfig[11];
+        :root {
+            --color-bajo: #4caf50;
+            --color-moderado: #fbc02d;
+            --color-alto: #f57c00;
+            --color-muy-alto: #d32f2f;
+            --color-extremo: #7b1fa2;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --bg-default: #333;
         }
 
-        async function init() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    
-                    try {
-                        // 1. Obtener datos de Open-Meteo
-                        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=uv_index_max&timezone=auto&current_weather=true`);
-                        const data = await response.json();
-                        
-                        // 2. Obtener nombre de ciudad (Reverse Geocoding básico)
-                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                        const geoData = await geoRes.json();
-                        const city = geoData.address.city || geoData.address.town || geoData.address.village || 'Ubicación Detectada';
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0; /* Fondo de la página para contraste */
+            color: var(--text-primary);
+            text-align: center;
+        }
 
-                        // Actualizar UI
-                        updateUI(data.daily.uv_index_max[0], city, latitude, longitude);
-                    } catch (error) {
-                        console.error("Error al obtener datos:", error);
-                    }
-                }, () => {
-                    alert("Por favor, permite el acceso a la ubicación para ver el índice local.");
-                });
+        .phone-container {
+            width: 360px; /* Ancho de un teléfono promedio */
+            height: 740px; /* Alto de un teléfono promedio */
+            background: #fff;
+            border-radius: 36px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Simulación de la 'Isla Dinámica' / Notch */
+        .phone-notch {
+            width: 120px;
+            height: 30px;
+            background: #000;
+            border-radius: 15px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .screen {
+            flex: 1;
+            padding: 50px 25px 25px; /* Padding superior extra para el notch */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background 0.5s ease;
+            background-color: var(--bg-default);
+        }
+
+        .header {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        .uv-value {
+            font-size: 10rem;
+            font-weight: 700;
+            margin: -20px 0;
+            line-height: 1;
+        }
+
+        .uv-label {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .uv-scale {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .scale-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scale-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .recommendation {
+            font-size: 11px;
+            text-align: left;
+            margin-top: 15px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .location-info {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .footer {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        #location-status {
+            font-size: 14px;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="phone-notch"></div>
+        <div id="main-screen" class="screen">
+            <div class="header">MONITOR DE RADIACIÓN UV - ESCUELA DE TURISMO DUOCUC</div>
+            <div class="uv-value" id="uv-value">--.-</div>
+            <div class="uv-label" id="uv-label">Cargando...</div>
+
+            <div class="uv-scale">
+                <div class="scale-item"><div class="scale-dot" style="background-color: var(--color-bajo);"></div> BAJO</div>
+                <div class="scale-item"><div class="scale-dot" style="background-color: var(--color-moderado);"></div> MODERADO</div>
+                <div class="scale-item"><div class="scale-dot" style="background-color: var(--color-alto);"></div> ALTO</div>
+                <div class="scale-item"><div class="scale-dot" style="background-color: var(--color-muy-alto);"></div> MUY ALTO</div>
+                <div class="scale-item"><div class="scale-dot" style="background-color: var(--color-extremo);"></div> EXTREMO</div>
+            </div>
+
+            <div class="recommendation" id="uv-recommendation">Obteniendo datos de ubicación y clima...</div>
+
+            <div class="location-info">
+                UBICACIÓN APROXIMADA: <span id="location-coords">--.-°, --.-°</span><br>
+                CIUDAD PRINCIPAL MÁS CERCANA: <span id="location-city">--</span>
+            </div>
+
+            <div class="footer">DATOS PROPORCIONADOS POR API METEOROLÓGICA OFICIAL OPEN-METEO</div>
+        </div>
+    </div>
+
+    <script>
+        const uvValueEl = document.getElementById('uv-value');
+        const uvLabelEl = document.getElementById('uv-label');
+        const uvRecommendationEl = document.getElementById('uv-recommendation');
+        const locationCoordsEl = document.getElementById('location-coords');
+        const locationCityEl = document.getElementById('location-city');
+        const screenEl = document.getElementById('main-screen');
+
+        const uvData = {
+            low: { label: 'Bajo', color: 'var(--color-bajo)', rec: 'Riesgo bajo. Use protector solar si estará expuesto al sol por largos periodos.' },
+            moderate: { label: 'Moderado', color: 'var(--color-moderado)', rec: 'Riesgo moderado. Use protector solar, sombrero y gafas de sol.' },
+            high: { label: 'Alto', color: 'var(--color-alto)', rec: 'Riesgo alto. Reduzca exposición entre 11 AM y 4 PM. Use ropa de manga larga y protector solar SPF 30+.' },
+            veryHigh: { label: 'Muy Alto', color: 'var(--color-muy-alto)', rec: 'Riesgo muy alto. Reduzca exposición entre 11 AM y 4 PM. Use protector solar SPF 50+, sombrero de ala ancha, gafas de sol y camisa de manga larga.' },
+            extreme: { label: 'Extremo', color: 'var(--color-extremo)', rec: 'Riesgo extremo. Evite salir durante las horas centrales del día. Use máxima protección solar (SPF 50+), ropa protectora y quédese a la sombra.' }
+        };
+
+        function getUvDetails(uvIndex) {
+            if (uvIndex < 3) return uvData.low;
+            if (uvIndex < 6) return uvData.moderate;
+            if (uvIndex < 8) return uvData.high;
+            if (uvIndex < 11) return uvData.veryHigh;
+            return uvData.extreme;
+        }
+
+        async function fetchCityName(lat, lon) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                if (data.address) {
+                    const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || 'Desconocida';
+                    locationCityEl.textContent = city.toUpperCase();
+                } else {
+                    locationCityEl.textContent = 'NO ENCONTRADA';
+                }
+            } catch (error) {
+                console.error("Error al obtener el nombre de la ciudad:", error);
+                locationCityEl.textContent = 'ERROR DE RED';
             }
         }
 
-        function updateUI(uvIndex, city, lat, lon) {
-            const details = getUvDetails(uvIndex);
-            
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('content').classList.remove('hidden');
-            
-            document.getElementById('location-name').innerText = city;
-            document.getElementById('coords').innerText = `${lat.toFixed(4)}° / ${lon.toFixed(4)}°`;
-            
-            const uvCircle = document.getElementById('uv-circle');
-            const uvValue = document.getElementById('uv-value');
-            const uvLevel = document.getElementById('uv-level');
-            const uvAdvice = document.getElementById('uv-advice');
+        async function fetchUvData(lat, lon) {
+            try {
+                // Open-Meteo API URL para el índice UV actual
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=uv_index&timezone=auto`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
 
-            uvCircle.style.borderColor = details.color;
-            uvValue.innerText = uvIndex.toFixed(1);
-            uvLevel.innerText = details.label;
-            uvLevel.style.color = details.color === '#FFF300' ? '#D1A100' : details.color;
-            uvAdvice.innerText = details.advice;
+                if (data.current && data.current.uv_index !== undefined) {
+                    const uvIndex = data.current.uv_index;
+                    const uvDetails = getUvDetails(uvIndex);
+
+                    uvValueEl.textContent = uvIndex.toFixed(1);
+                    uvLabelEl.textContent = uvDetails.label;
+                    uvRecommendationEl.textContent = uvDetails.rec;
+                    screenEl.style.backgroundColor = uvDetails.color;
+
+                    // Formatear coordenadas como en la imagen de referencia (ej: 33.05° S, 71.61° W)
+                    const latDir = lat >= 0 ? 'N' : 'S';
+                    const lonDir = lon >= 0 ? 'E' : 'W';
+                    locationCoordsEl.textContent = `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+
+                    // Obtener el nombre de la ciudad
+                    fetchCityName(lat, lon);
+
+                } else {
+                    uvLabelEl.textContent = 'Error';
+                    uvRecommendationEl.textContent = 'No se pudieron obtener datos UV para esta ubicación.';
+                }
+
+            } catch (error) {
+                console.error("Error al obtener datos climáticos:", error);
+                uvLabelEl.textContent = 'Error';
+                uvRecommendationEl.textContent = 'Error al conectar con la API de clima.';
+            }
         }
 
-        init();
+        function getLocation() {
+            if (navigator.geolocation) {
+                uvLabelEl.textContent = 'Localizando...';
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        // Actualizar coordenadas de marcador de posición antes de la llamada a la API
+                        locationCoordsEl.textContent = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+                        fetchUvData(latitude, longitude);
+                    },
+                    (error) => {
+                        console.error("Error de geolocalización:", error);
+                        uvLabelEl.textContent = 'Ubicación Denegada';
+                        uvRecommendationEl.textContent = 'Por favor, permita el acceso a la ubicación para ver el índice UV de su zona.';
+                        screenEl.style.backgroundColor = var(--bg-default);
+                    }
+                );
+            } else {
+                uvLabelEl.textContent = 'No Soportado';
+                uvRecommendationEl.textContent = 'Su navegador no soporta geolocalización.';
+            }
+        }
+
+        // Iniciar el proceso
+        getLocation();
+
     </script>
 </body>
 </html>
