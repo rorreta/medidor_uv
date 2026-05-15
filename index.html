@@ -106,7 +106,16 @@
     <div id="loader">Detectando ubicación...</div>
 
     <header id="main-content" style="display:none;">
-        <h1>INDICE UV (en vivo)</h1>
+        <h1>INDICE UV (en vivo)
+
+
+<p>actualizado: <span id="fecha-actual"></span></p>
+</h1>
+
+<script>
+    document.getElementById("fecha-actual").innerHTML = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+</script>
+
         <div class="location-box">
             <span id="city" class="city-name">CARGANDO...</span>
             <span id="coords" class="coords">0.00, 0.00</span>
